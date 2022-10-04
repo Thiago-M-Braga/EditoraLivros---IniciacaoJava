@@ -44,11 +44,9 @@ public class Estante extends JFrame {
                     //Revisor ou Diretor, irá separar dentro da função
                     new CadastroLivro(usuario, livro);
                 }
-
             } else {
                 JOptionPane.showMessageDialog(null, "Selecione um livro!");
             }
-
         });
     }
 

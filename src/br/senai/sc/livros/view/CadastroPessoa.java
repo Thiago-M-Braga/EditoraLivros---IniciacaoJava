@@ -48,7 +48,6 @@ public class CadastroPessoa extends JFrame {
                     JOptionPane.showMessageDialog(null, err.getMessage());
                 }
             }
-
         });
     }
 

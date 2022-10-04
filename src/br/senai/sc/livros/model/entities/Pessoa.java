@@ -36,6 +36,22 @@ public abstract class Pessoa {
         return hash;
     }
 
+    public void setCPF(String CPF) {
+        this.CPF = CPF;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
+    }
+
     public String getCPF() {
         return CPF;
     }

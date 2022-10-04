@@ -8,17 +8,47 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 public class PessoaDAO {
-    private Connection conn;
+    private static Connection conn;
 
 
-    private static final Set<Pessoa> listaPessoas = new HashSet<>();
+    private static Collection<Pessoa> listaPessoas = new HashSet<>();
 
     public PessoaDAO() {
         this.conn = new ConexaoFactory().connectDB();
+    }
+
+    public static void removePessoaPorID(int id) {
+        String sql = "DELETE FROM pessoa WHERE id = ?";
+        try (Connection conn = new ConexaoFactory().connectDB();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static Collection<Pessoa> listarPessoas() {
+        String sqlCommand = "SELECT * FROM pessoas WHERE tipoPessoa = '1' or tipoPessoa= '2'";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sqlCommand)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet != null && resultSet.next()) {
+                    Pessoa pessoa = PessoaFactory.criarPessoa(resultSet);
+                    listaPessoas.add(pessoa);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Erro ao listar pessoas");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao preparar comando SQL");
+        }
+        return Collections.unmodifiableCollection(listaPessoas);
     }
 
     public void inserir(Pessoa pessoa) {

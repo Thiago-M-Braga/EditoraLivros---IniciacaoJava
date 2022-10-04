@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 public class ConexaoFactory {
 
-    private String url = "jdbc:mysql://localhost:3306/conectelivros";
+    private String url = "jdbc:mysql://localhost:3306/conecteLivros";
     private String username = "root";
     private String password = "root";
 
@@ -14,7 +14,7 @@ public class ConexaoFactory {
         try {
             return DriverManager.getConnection(url, username, password);
         } catch (Exception exception) {
-            throw new RuntimeException(exception);
+            throw new RuntimeException("Erro: "+ exception);
         }
     }
 }
