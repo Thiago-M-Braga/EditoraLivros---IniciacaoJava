@@ -13,14 +13,52 @@ import java.util.*;
 
 public class LivroDAO {
 
-    private static Collection<Livro> listaLivros = new HashSet<>();
+    private static Collection<Livro> listaLivros = new ArrayList<>();
     private Connection connection;
 
-
+    //Faz a conexão/ligação com o banco de dados
     public LivroDAO() {
         this.connection = new ConexaoFactory().connectDB();
     }
 
+    //Método que retorna a lista de livros daquele autor
+    public  Collection<Livro> listarLivros(Pessoa autor) {
+        String sqlCommand = "select * from livros where AUTOR_cpf = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlCommand)) {
+            preparedStatement.setString(1, autor.getCPF());
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet != null && resultSet.next()) {
+                    Livro livro = new Livro(
+                            (Autor) new PessoaDAO().selecionarPorCPF(resultSet.getString("AUTOR_cpf")),
+                            resultSet.getString("tituloLivro"),
+                            new StatusFactory().getStatus(),
+                            resultSet.getInt("qtdPaginasLivro"),
+                            resultSet.getInt("isbnLivro")
+                    );
+                    listaLivros.add(livro);
+                }
+                return listaLivros;
+            } catch (Exception e) {
+                throw new RuntimeException("Erro na execução do comando SQL");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Erro na preparação do comando SQL"+e.getMessage());
+        }
+    }
+
+    //Método que irá remover um livro da lista de livros e do Banco de dados
+    public void removerLivro(int isbn) {
+        String sqlCommand = "delete from livros where isbnLivro = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlCommand)) {
+            preparedStatement.setInt(1, isbn);
+            preparedStatement.execute();
+            listaLivros.remove(LivroFactory.pegarLivroPeloISBN(isbn, listaLivros));
+        } catch (Exception e) {
+            throw new RuntimeException("Erro na execução do comando SQL");
+        }
+    }
+
+    //Método que irá adicionar um livro no Banco de dados
     public void inserir(Livro livro) {
         String sqlCommand = "insert into livros (isbnLivro, tituloLivro, statusLivro, qtdPaginasLivro, AUTOR_cpf) values (?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sqlCommand)) {
@@ -39,98 +77,7 @@ public class LivroDAO {
         }
     }
 
-    public void remover(Livro livro) {
-        listaLivros.remove(livro);
-    }
-
-    public Livro selecionar(int isbn) {
-        String sqlCommand = "select * from livros where isbnLivro = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlCommand)) {
-            preparedStatement.setInt(1, isbn);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return extrairObjeto(resultSet);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("Erro na execução do comando SQL");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Erro na preparação do comando SQL");
-        }
-        throw new RuntimeException("Algo deu ruim");
-    }
-
-    private Livro extrairObjeto(ResultSet resultSet) {
-        try {
-            return new LivroFactory().getLivro(
-                    resultSet.getInt("isbnLivro"),
-                    resultSet.getString("tituloLivro"),
-                    resultSet.getInt("statusLivro"),
-                    resultSet.getInt("qtdPaginasLivro"),
-                    resultSet.getString("AUTOR_cpf"));
-        } catch (Exception e) {
-            throw new RuntimeException("Erro ao extrair objeto");
-        }
-    }
-
-    public void atualizarStatus(int isbn, Status status) {
-        String sqlCommand = "update livros set statusLivro = " + status.ordinal() + " where isbnLivro = " + isbn;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlCommand)) {
-            try {
-                preparedStatement.execute();
-            } catch (Exception e) {
-                throw new RuntimeException("Erro na execução do comando SQL");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Erro na preparação do comando SQL: ");
-        }
-    }
-
-    public void atualizarRevisor(int isbn, Revisor revisor) {
-        String sqlCommand = "update livros set REVISOR_cpf = " + revisor.getCPF() + " where isbnLivro = " + isbn;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlCommand)) {
-            try {
-                preparedStatement.execute();
-            } catch (Exception e) {
-                throw new RuntimeException("Erro na execução do comando SQL");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Erro na preparação do comando SQL");
-        }
-    }
-
-    public Collection<Livro> getAllLivros() {
-        String sqlCommand = "select * from livros";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlCommand)) {
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet != null && resultSet.next()) {
-                    Livro livro = new Livro(
-                            (Autor) new PessoaDAO().selecionarPorCPF(resultSet.getString("AUTOR_cpf")),
-                            resultSet.getString("tituloLivro"),
-                            new StatusFactory().getStatus(),
-                            resultSet.getInt("qtdPaginasLivro"),
-                            resultSet.getInt("isbnLivro"));
-                    listaLivros.add(livro);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("Erro na execução do comando SQL");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Erro na preparação do comando SQL");
-        }
-        return Collections.unmodifiableCollection(listaLivros);
-    }
-
-    public Collection<Livro> selecionarPorAutor(Pessoa pessoa) {
-        Collection<Livro> livrosAutor = new ArrayList<>();
-        for (Livro livro : getAllLivros()) {
-            if (livro.getAutor().equals(pessoa)) {
-                livrosAutor.add(livro);
-            }
-        }
-        return livrosAutor;
-    }
-
+    //Método que irá retornar um livro do banco de dados conforme o status
     public Collection<Livro> selecionarPorStatus(Status status) {
         Collection<Livro> livrosStatus = new ArrayList<>();
         String sqlCommand = "select * from livros where statusLivro = ?";
@@ -155,6 +102,7 @@ public class LivroDAO {
         }
     }
 
+    //Método que irá retornar livros do banco de dados conforme as atividades de uma pessoa
     public Collection<Livro> selecionarAtividadesAutor(Pessoa pessoa) {
         Collection<Livro> livrosStatus = new ArrayList<>();
         String sqlCommand = "select * from livros where statusLivro = 3 and AUTOR_cpf = ?";
@@ -171,6 +119,53 @@ public class LivroDAO {
                     livrosStatus.add(livro);
                 }
                 return livrosStatus;
+            } catch (Exception e) {
+                throw new RuntimeException("Erro na execução do comando SQL");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Erro na preparação do comando SQL");
+        }
+    }
+
+    //Método que irá atualizar um livro do banco de dados conforme o ISBN
+    public void atualizarLivro(String titulo, int isbn) {
+        String sqlCommand = "update livros set tituloLivro = ?, statusLivro = ? where isbnLivro = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlCommand)) {
+            preparedStatement.setString(1, titulo);
+            preparedStatement.setInt(2, Status.AGUARDANDO_REVISAO.ordinal());
+            preparedStatement.setInt(3, isbn);
+            try {
+                preparedStatement.execute();
+            } catch (Exception e) {
+                throw new RuntimeException("Erro na execução do comando SQL");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Erro na preparação do comando SQL");
+        }
+    }
+
+    //Método que irá atualizar o status de um livro do banco de dados conforme o ISBN
+    public void revisarLivro(int isbn, Pessoa pessoa, int status) {
+        String sqlCommand = "update livros set statusLivro = ?, REVISOR_cpf = ? where isbnLivro = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlCommand)) {
+            switch (status) {
+                case 1:
+                    preparedStatement.setInt(1, Status.EM_REVISAO.ordinal());
+                    break;
+                case 2:
+                    preparedStatement.setInt(1, Status.AGUARDANDO_EDICAO.ordinal());
+                    break;
+                case 3:
+                    preparedStatement.setInt(1, Status.PUBLICADO.ordinal());
+                    break;
+                default:
+                    preparedStatement.setInt(1, Status.REPROVADO.ordinal());
+                    break;
+            }
+            preparedStatement.setString(2, pessoa.getCPF());
+            preparedStatement.setInt(3, isbn);
+            try {
+                preparedStatement.execute();
             } catch (Exception e) {
                 throw new RuntimeException("Erro na execução do comando SQL");
             }

@@ -6,12 +6,12 @@ import java.sql.ResultSet;
 
 public class GeneroFactory {
 
-    public Genero getGenero(Integer ordinal) {
+    public static Genero getGenero(Integer ordinal) {
         switch (ordinal) {
-            case 0 -> {
+            case 1 -> {
                 return Genero.MASCULINO;
             }
-            case 1 -> {
+            case 2 -> {
                 return Genero.FEMININO;
             }
             default -> {

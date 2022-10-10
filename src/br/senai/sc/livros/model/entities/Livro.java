@@ -20,9 +20,6 @@ public class Livro {
     private Integer ISBN;
     private Pessoa revisor;
 
-    public Livro() {
-    }
-
     public Livro(Autor autor, String titulo, Status status, int qntdPaginas, int ISBN) {
         this.autor = autor;
         this.titulo = titulo;
@@ -37,8 +34,6 @@ public class Livro {
 
     @Override
     public boolean equals(Object o) {
-//        if (this == o) return true;
-//        if (o == null || getClass() != o.getClass()) return false;
         Livro livro = (Livro) o;
         return this.ISBN == livro.ISBN;
     }
@@ -52,32 +47,16 @@ public class Livro {
         return autor;
     }
 
-    public void setAutor(Autor autor) {
-        this.autor = autor;
-    }
-
     public Editora getEditora() {
         return editora;
-    }
-
-    public void setEditora(Editora editora) {
-        this.editora = editora;
     }
 
     public String getTitulo() {
         return titulo;
     }
 
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
-    }
-
     public Status getStatus() {
         return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
     }
 
     public int getQntdPaginas() {
@@ -90,10 +69,6 @@ public class Livro {
 
     public Pessoa getRevisor() {
         return revisor;
-    }
-
-    public void setRevisor(Revisor revisor) {
-        this.revisor = revisor;
     }
 
     @Override
@@ -111,15 +86,13 @@ public class Livro {
             revisorNome = getRevisor().getNome();
         }
 
-        return "Livro{" +
-                "autor=" + autor.getNome() +
-                ", editora=" + editoraNome +
-                ", titulo='" + titulo + '\'' +
-                ", status=" + status.getNome() +
-                ", qntdPaginas=" + qntdPaginas +
-                ", ISBN=" + ISBN +
-                ", RevisorResponsável: " + revisorNome +
-                ", % Páginas revisadas: " + paginasRevisadas +
-                '}';
+        return "\nAutor: " + autor.getNome() +
+                "\nEditora: " + editoraNome +
+                "\nTítulo: " + titulo +
+                "\nStatus: " + status.getNome() +
+                "\nQuantidade de Páginas: " + qntdPaginas +
+                "\nISBN: " + ISBN +
+                "\nRevisor Responsável: " + revisorNome +
+                "\n% das Páginas revisadas: " + paginasRevisadas;
     }
 }

@@ -2,56 +2,32 @@ package br.senai.sc.livros.controller;
 
 import br.senai.sc.livros.model.entities.*;
 import br.senai.sc.livros.model.service.LivroService;
-import br.senai.sc.livros.view.Menu;
 
-import java.util.ArrayList;
 import java.util.Collection;
-//Objeto que vai intermediar a view com a classe livros;
-
 
 public class LivrosController {
 
-    Livro model = new Livro();
-
-    public Autor getAutor() {
-        return model.getAutor();
+    public static Collection<Livro> listarLivros(Pessoa pessoa) {
+        return LivroService.listarLivros(pessoa);
     }
 
-    public void setAutor(Autor autor) {
-        model.setAutor(autor);
+    public static void cadastrarLivro(String titulo, int isbn, int qtdPag, Pessoa autor){
+        new LivroService().inserir(Livro.cadastrar(titulo, isbn, qtdPag, (Autor)autor));
     }
 
-    public void cadastrar(String titulo, String isbn, String qtdPag, Pessoa autor){
-        new LivroService().inserir(Livro.cadastrar(titulo, Integer.parseInt(isbn), Integer.parseInt(qtdPag), (Autor)autor));
+    public static Collection<Livro> listarAtividades(Pessoa pessoa) {
+        return LivroService.listarAtividades(pessoa);
     }
 
-    public Livro selecionar(int isbn){
-        return new LivroService().selecionar(isbn);
+    public static void removerLivro(int isbn) {
+        new LivroService().removerLivro(isbn);
     }
 
-    public Collection<Livro> getAllLivros(){
-        return new LivroService().getAllLivros();
-    };
-
-    public Collection<Livro> selecionarPorAutor(){
-        return new LivroService().selecionarPorAutor(Menu.getUsuario());
+    public static void atualizarLivro(String titulo, int isbn) {
+        new LivroService().atualizarLivro(titulo, isbn);
     }
 
-    public Collection<Livro> listarAtividades(){
-        return new LivroService().listarAtividades(Menu.getUsuario());
+    public static void revisarLivro(int isbn, Pessoa pessoa, int status) {
+        LivroService.revisarLivro(isbn, pessoa, status);
     }
-
-    public Livro selecionarPorISBN(int isbn){
-        return new LivroService().selecionarPorISBN(isbn);
-    }
-
-    public void atualizarStatus(Livro livro, Status status){
-        new LivroService().atualizarStatus(livro, status);
-    }
-
-    public void adicionarRevisor(Livro livro, Pessoa usuario){
-        new LivroService().adicionarRevisor(livro, (Revisor) usuario);
-    }
-
-
 }

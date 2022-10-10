@@ -9,17 +9,4 @@ public enum Genero {
     Genero(String nome) {
         this.nome = nome;
     }
-
-    public static Genero getGeneroCorreto(Integer intGenero) {
-        for (Genero genero : Genero.values()) {
-            if (genero.ordinal() == intGenero) {
-                return genero;
-            }
-        }
-        throw new RuntimeException("Genero não encontrado");
-    }
-
-    private String getNome() {
-        return this.nome;
-    }
 }

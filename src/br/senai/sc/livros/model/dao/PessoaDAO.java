@@ -14,43 +14,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class PessoaDAO {
-    private static Connection conn;
-
-
-    private static Collection<Pessoa> listaPessoas = new HashSet<>();
+    private Connection conn;
 
     public PessoaDAO() {
         this.conn = new ConexaoFactory().connectDB();
     }
 
-    public static void removePessoaPorID(int id) {
-        String sql = "DELETE FROM pessoa WHERE id = ?";
-        try (Connection conn = new ConexaoFactory().connectDB();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    public static Collection<Pessoa> listarPessoas() {
-        String sqlCommand = "SELECT * FROM pessoas WHERE tipoPessoa = '1' or tipoPessoa= '2'";
-        try (PreparedStatement preparedStatement = conn.prepareStatement(sqlCommand)) {
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet != null && resultSet.next()) {
-                    Pessoa pessoa = PessoaFactory.criarPessoa(resultSet);
-                    listaPessoas.add(pessoa);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("Erro ao listar pessoas");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Erro ao preparar comando SQL");
-        }
-        return Collections.unmodifiableCollection(listaPessoas);
-    }
-
+    // Método para inserir uma pessoa no banco de dados
     public void inserir(Pessoa pessoa) {
         String sqlCommand = "INSERT INTO PESSOAS (cpfPessoa, nomePessoa, sobrenomePessoa, emailPessoa, generoPessoa, senhaPessoa, tipoPessoa) values (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstm = conn.prepareStatement(sqlCommand)) {
@@ -72,10 +42,7 @@ public class PessoaDAO {
         System.out.println("Cadastro chegou ao fim");
     }
 
-    public void remover(Pessoa pessoa) {
-        listaPessoas.remove(pessoa);
-    }
-
+    // Método para buscar uma pessoa no banco de dados pelo seu CPF
     public Pessoa selecionarPorCPF(String cpf) {
         String sqlCommand = "select * from pessoas where cpfPessoa = ?";
         try (PreparedStatement pstm = conn.prepareStatement(sqlCommand)) {
@@ -93,23 +60,7 @@ public class PessoaDAO {
         throw new RuntimeException("Algo deu ruim");
     }
 
-    public Pessoa selecionarPorEmail(String email) {
-        String sqlCommand = "select * from pessoas where emailPessoa = ?";
-        try (PreparedStatement pstm = conn.prepareStatement(sqlCommand)) {
-            pstm.setString(1, email);
-            try (ResultSet resultSet = pstm.executeQuery()) {
-                if (resultSet.next()) {
-                    return extrairObjeto(resultSet);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("Erro na execução do comando SQL");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Erro na preparação do comando SQL");
-        }
-        throw new RuntimeException("Algo deu ruim");
-    }
-
+    // Método para extrair os dados de uma pessoa
     private Pessoa extrairObjeto(ResultSet resultSet) {
         try {
             return new PessoaFactory().getPessoa(
@@ -123,5 +74,43 @@ public class PessoaDAO {
         } catch (Exception e) {
             throw new RuntimeException("Erro ao extrair o objeto!");
         }
+    }
+
+    // Método para buscar todas uma pessoa do banco de dados através do seu email e senha
+    public Pessoa ValidaLogin(String email, String senha) {
+        String sqlCommand = "select * from pessoas where emailPessoa = ? and senhaPessoa = ?";
+        try (PreparedStatement pstm = conn.prepareStatement(sqlCommand)) {
+            pstm.setString(1, email);
+            pstm.setString(2, senha);
+            try (ResultSet resultSet = pstm.executeQuery()) {
+                if (resultSet.next()) {
+                    return extrairObjeto(resultSet);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Erro na execução do comando SQL");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Erro na preparação do comando SQL");
+        }
+        throw new RuntimeException("Algo deu ruim");
+    }
+
+    // Método para buscar um tipo de usuário no banco de dados pelo email e senha
+    public int BuscarTipoUsuario(String email, String senha) {
+        String sqlCommand = "select * from pessoas where emailPessoa = ? and senhaPessoa = ?";
+        try (PreparedStatement pstm = conn.prepareStatement(sqlCommand)) {
+            pstm.setString(1, email);
+            pstm.setString(2, senha);
+            try (ResultSet resultSet = pstm.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("tipoPessoa");
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Erro na execução do comando SQL");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Erro na preparação do comando SQL");
+        }
+        return 0;
     }
 }

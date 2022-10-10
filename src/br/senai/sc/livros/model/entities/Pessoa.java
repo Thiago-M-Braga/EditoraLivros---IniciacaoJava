@@ -1,24 +1,33 @@
 package br.senai.sc.livros.model.entities;
 
 import br.senai.sc.livros.model.factory.PessoaFactory;
-import br.senai.sc.livros.view.Menu;
+import br.senai.sc.livros.view.Main;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
-public abstract class Pessoa {
+public class Pessoa {
     private String CPF, nome, sobrenome, email, senha;
     private Genero genero;
+    private int tipoUsuario;
 
-    static ArrayList<Pessoa> listaPessoas = new ArrayList<>();
+    @Override
+    public String toString() {
+        return "\n--Nome: " + nome +
+                "\nSobrenome: " + sobrenome +
+                "\nCPF: " + CPF +
+                "\nEmail: " + email +
+                "\nSenha: " + senha +
+                "\nGenero: " + genero;
+    }
 
-    public Pessoa(String CPF, String nome, String sobrenome, String email, Genero genero, String senha) {
+    public Pessoa(String CPF, String nome, String sobrenome, String email, Genero genero, String senha, int tipoUsuario) {
         this.CPF = CPF;
         this.nome = nome;
         this.sobrenome = sobrenome;
         this.email = email;
         this.genero = genero;
         this.senha = senha;
+        this.tipoUsuario = tipoUsuario;
     }
 
     @Override
@@ -34,22 +43,6 @@ public abstract class Pessoa {
             hash += l;
         }
         return hash;
-    }
-
-    public void setCPF(String CPF) {
-        this.CPF = CPF;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setSenha(String senha) {
-        this.senha = senha;
     }
 
     public String getCPF() {
@@ -79,8 +72,7 @@ public abstract class Pessoa {
     public Pessoa validaLogin(String senha) {
         if (this.getSenha().equals(senha)) {
             return this;
-        }
-        ;
+        };
         throw new RuntimeException("Senha incorreta!");
     }
 
@@ -88,22 +80,10 @@ public abstract class Pessoa {
         return sobrenome;
     }
 
-    public void setSobrenome(String sobrenome) {
-        this.sobrenome = sobrenome;
-    }
-
-    @Override
-    public String toString() {
-        return nome + " " + sobrenome;
-    }
-
-    public static Pessoa cadastrar(String nome, String sobrenome, String email, Genero genero, String senha, String cpf, String confSenha) {
+    public static Pessoa cadastrar(String nome, String sobrenome, String email, Genero genero, String senha, String cpf, String confSenha, int tipoUsuario) {
         if (senha.equals(confSenha)) {
             if (email.contains("@")) {
-                int tipo = 1;
-                if (Menu.getUsuario() instanceof Diretor) {
-                    tipo = 2;
-                }
+                int tipo = tipoUsuario;
                 return new PessoaFactory().getPessoa(cpf, nome, sobrenome, email, senha, genero.ordinal(), tipo);
             } else {
                 throw new RuntimeException("Email inválido!");
@@ -111,7 +91,9 @@ public abstract class Pessoa {
         } else {
             throw new RuntimeException("Senhas não conferem!");
         }
-    }
+    };
 
-    ;
+    public int getTipo() {
+        return tipoUsuario;
+    }
 }

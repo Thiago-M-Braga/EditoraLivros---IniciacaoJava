@@ -3,22 +3,9 @@ package br.senai.sc.livros.model.factory;
 import br.senai.sc.livros.model.entities.*;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class PessoaFactory {
-    public static Pessoa criarPessoa(ResultSet resultSet) {
-        Pessoa pessoa = new Pessoa();
-        try {
-            pessoa.setNome(resultSet.getString("nome"));
-            pessoa.setSobrenome(resultSet.getString("sobrenome"));
-            pessoa.setEmail(resultSet.getString("email"));
-            pessoa.setSenha(resultSet.getString("senha"));
-            pessoa.setCPF(resultSet.getString("cpf"));
-            pessoa.setGenero(GeneroFactory.criarGenero(resultSet));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return pessoa;
-    }
 
     public Pessoa getPessoa(String cpf, String nome, String sobrenome, String email,
                             String senha, Integer genero, Integer tipo) {
